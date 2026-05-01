@@ -1,0 +1,25 @@
+{
+  "name": "@devtingz/pi-tool-authorizer",
+  "version": "0.7.0",
+  "description": "Intercepts every agent tool call and delegates authorization to a lightweight sub-agent",
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "security",
+    "authorization",
+    "guardrails"
+  ],
+  "license": "Creative Commons Attribution-NonCommercial version 4.0",
+  "dependencies": {
+    "@tintinweb/pi-subagents": "^0.5.2"
+  },
+  "peerDependencies": {
+    "@mariozechner/pi-coding-agent": "*",
+    "@sinclair/typebox": "*"
+  },
+  "pi": {
+    "extensions": [
+      "./tool-authorizer.ts"
+    ]
+  }
+}
