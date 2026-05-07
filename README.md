@@ -2,11 +2,15 @@
 
 Create a new folder in the local Pi extensions directory, then copy these files into the new folder.
 
-You will also need to create a System Prompt file to power an *Authorizer Sub-Agent*. (#authorizer-file)
+There is a file named "authorizer_override.MOVE_THIS_FILE.py" that should be moved out of the Pi config directory.
+
+There is a file named "skill.MOVE_THIS_FILE.md".  This file should be renamed to simply "skill.md".  Also for this file, a subdirectory named "approve-override" should be created under the actual Pi "skills" directory, and the file should be moved there.
+
+You will also need to create a System Prompt file to power an *Authorizer Sub-Agent*. (#authorizer-file).
 
 ## Overview
 
-After receiving user prompts, the *Primary AI Agent* is likely to become very determined to complete the user's requests.  Given that LLMs often have a blindness to consequences at a college intern level, very destructive outcomes can occur.  Additionally, prompt injection attacks against LLM-powered personal agents are still a very new area of research.  To mitigate these threats, this Pi extension installs an *Authorizer Sub-Agent* to analyze the operations that the *Primary Agent* is attempting to execute.  The *Authorizer Sub-Agent* is not driven by the user's requests, and is instead tasked to inspect AI tool calls in isolation, without being poisoned by the single-mindedness determination of the *Primary Agent* to complete the current user task.  This Pi extension intercepts **every** agent tool call and delegates most authorizations to the lightweight sub-agent. The sub-agent returns one of three verdicts:
+After receiving user prompts, the *Primary AI Agent* is likely to become very determined to complete the user's requests.  Given that LLMs often have a blindness to consequences at a college intern level, very destructive outcomes can occur.  Additionally, prompt injection attacks against LLM-powered personal agents are still a very new area of research.  To mitigate these threats, this Pi extension installs an *Authorizer Sub-Agent* to analyze the operations that the *Primary Agent* is attempting to execute.  The *Authorizer Sub-Agent* is not driven by the user's requests, and is instead tasked to inspect AI tool calls in isolation, without being poisoned by the single-minded determination of the *Primary Agent* to complete the current user task.  This Pi extension intercepts **every** agent tool call and delegates most authorizations to the lightweight sub-agent. The sub-agent returns one of three verdicts:
 
 - **ALLOW** — tool proceeds
 - **DENY: \<reason\>** — tool blocked, a DenialUUID is generated
@@ -58,6 +62,8 @@ and calling the `approve_override` tool with:
 }
 ```
 
+The file named "authorizer_override.MOVE_THIS_FILE.py" has been provided to easily calculate the override codes (mac).  Tell the agent to retry a denied tool call, and supply both the denial UUID and the override code.
+
 ### Secret Management
 
 - The shared secret is stored at `~/.pi/secret/authorizer-secret.txt`.
@@ -66,6 +72,8 @@ and calling the `approve_override` tool with:
 - The previous secret is discarded — overrides are single-use.
 
 > **Tip:** To retrieve the current secret for manual override computation, read the file at `~/.pi/secret/authorizer-secret.txt`.
+
+Pi must be blocked from reading the file that contains the secret and any script that calculates the override codes, such as "authorizer_override.MOVE_THIS_FILE.py". Configure the "authorizer.md" file appropriately to accomplish this.
 
 ## Possible Errors
 
@@ -226,8 +234,8 @@ After customizing, run these verification steps:
 1. **Check the extension loaded** — look for `[tool-authorizer] Extension loaded` in pi's startup output.
 2. **Check the authorizer agent was created** — verify `~/.pi/agent/agents/authorizer.md` exists.
 3. **Test a safe command** — ask the agent to `ls` a directory. It should pass through without authorization.
-4. **Test a risky command** — ask the agent to `rm -rf` or `curl`. It should be blocked with a DenialUUID.
-5. **Test the authorizer directly** — use `/test-authorizer read C:/path/to/file` or `/test-authorizer bash rm -rf /`.
+4. **Test a risky command** — ask the agent attempt `curl`. It should be blocked with a DenialUUID.
+5. **Test the authorizer directly** — use `/test-authorizer read C:/path/to/file`.
 6. **Test an override** — after a denial, retrieve the secret from `~/.pi/secret/authorizer-secret.txt`, compute the HMAC, and call `approve_override`.
 7. **Check the log** — use `/authorizer-log` to see recent authorization decisions.
 
